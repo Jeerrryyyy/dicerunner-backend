@@ -1,41 +1,25 @@
-import {
-  ConnectedSocket,
-  MessageBody,
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
-import { LobbyCache } from '../lobby/lobby.cache';
+import { ConnectedSocket, MessageBody, OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import { LobbyManager } from '../lobby/lobby.manager';
 import { Server, Socket } from 'socket.io';
 import { LobbyModel } from '../lobby/models/lobby.model';
-import { createRandomId } from '../utils/utils';
 import { CreateLobbyDto } from './dto/createLobby.dto';
-import { UserModel } from './models/user.model';
+import { JoinLobbyDto } from './dto/joinLobby.dto';
 
 @WebSocketGateway()
-export class LobbyGateway {
-  @WebSocketServer()
-  server: Server;
+export class LobbyGateway implements OnGatewayInit {
+  private lobbyManager: LobbyManager;
 
-  constructor(private readonly lobbyCache: LobbyCache) {}
+  afterInit(server: Server): void {
+    this.lobbyManager = new LobbyManager(server);
+  }
 
   @SubscribeMessage('createLobby')
-  handleCreateLobby(
-    @MessageBody() data: CreateLobbyDto,
-    @ConnectedSocket() client: Socket,
-  ): LobbyModel {
-    const generatedId = createRandomId(10);
+  handleCreateLobby(@MessageBody() data: CreateLobbyDto, @ConnectedSocket() client: Socket): LobbyModel {
+    return this.lobbyManager.createLobby(data, client);
+  }
 
-    const lobbyModel: LobbyModel = new LobbyModel(
-      generatedId,
-      new UserModel(client.id, data.username),
-      [],
-      Date.now(),
-      false,
-    );
-
-    this.lobbyCache.addLobby(lobbyModel);
-
-    return this.lobbyCache.getLobby(generatedId);
+  @SubscribeMessage('joinLobby')
+  handleJoinLobby(@MessageBody() data: JoinLobbyDto, @ConnectedSocket() client: Socket): LobbyModel {
+    return this.lobbyManager.joinLobby(data, client);
   }
 }

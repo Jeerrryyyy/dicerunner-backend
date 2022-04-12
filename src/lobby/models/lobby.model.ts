@@ -7,13 +7,7 @@ export class LobbyModel {
   private _creationMillis: number;
   private _gameRunning: boolean;
 
-  constructor(
-    idCode: string,
-    owner: UserModel,
-    users: UserModel[],
-    creationMillis: number,
-    gameRunning: boolean,
-  ) {
+  constructor(idCode: string, owner: UserModel, users: UserModel[], creationMillis: number, gameRunning: boolean) {
     this._idCode = idCode;
     this._owner = owner;
     this._users = users;
