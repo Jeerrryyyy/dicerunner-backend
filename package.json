@@ -1,8 +1,8 @@
 {
   "name": "dicerunner-backend",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Backend software for the dicerunner game",
+  "author": "Aida & Jerry",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
