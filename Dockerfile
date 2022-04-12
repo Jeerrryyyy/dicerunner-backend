@@ -22,4 +22,6 @@ COPY --from=node-builder --chown=node:node /home/node/package*.json ./
 COPY --from=node-builder --chown=node:node /home/node/node_modules/ ./node_modules/
 COPY --from=node-builder --chown=node:node /home/node/dist/ ./dist/
 
+EXPOSE 8080
+
 CMD ["node", "dist/main.js"]
