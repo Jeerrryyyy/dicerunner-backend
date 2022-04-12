@@ -6,7 +6,8 @@ on:
   push:
     branches: [ master ]
     tags: [ '*.*.*' ]
-  pull_request: [ master ]
+  pull_request:
+    branches: [ master ]
 
 env:
   REGISTRY: docker.io
