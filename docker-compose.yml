@@ -1,0 +1,18 @@
+version: "3.5"
+
+services:
+  dicerunner-backend:
+    image: dicerunner/backend:latest
+    container_name: dicerunner-backend
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - internal_network
+
+networks:
+  internal_network:
+    name: internal_network
