@@ -1,4 +1,11 @@
-import { ConnectedSocket, MessageBody, OnGatewayInit, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+} from '@nestjs/websockets';
 import { LobbyManager } from '../lobby/lobby.manager';
 import { Server, Socket } from 'socket.io';
 import { LobbyModel } from '../lobby/models/lobby.model';
@@ -6,11 +13,15 @@ import { CreateLobbyDto } from './dto/createLobby.dto';
 import { JoinLobbyDto } from './dto/joinLobby.dto';
 
 @WebSocketGateway()
-export class LobbyGateway implements OnGatewayInit {
+export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
   private lobbyManager: LobbyManager;
 
   afterInit(server: Server): void {
     this.lobbyManager = new LobbyManager(server);
+  }
+
+  handleDisconnect(client: Socket): void {
+    console.log({ client });
   }
 
   @SubscribeMessage('createLobby')

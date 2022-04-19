@@ -1,9 +1,10 @@
 import { LobbyModel } from './models/lobby.model';
 import { createRandomId } from '../utils/utils';
-import { UserModel } from '../sockets/models/user.model';
+import { UserModel } from './models/user.model';
 import { CreateLobbyDto } from '../sockets/dto/createLobby.dto';
 import { Server, Socket } from 'socket.io';
 import { JoinLobbyDto } from '../sockets/dto/joinLobby.dto';
+import { GameModel } from './models/game.model';
 
 export class LobbyManager {
   private lobbies: Map<string, LobbyModel> = new Map();
@@ -21,10 +22,10 @@ export class LobbyManager {
 
     const lobbyModel: LobbyModel = new LobbyModel(
       generatedId,
-      new UserModel(client.id, data.username),
+      new UserModel(client.id, data.username, 0),
       [],
       Date.now(),
-      false,
+      new GameModel(0, 0, 100, false, 'none'),
     );
 
     this.addLobby(lobbyModel);
@@ -37,7 +38,7 @@ export class LobbyManager {
     const lobbyModel: LobbyModel = this.getLobby(data.lobbyCode);
     this.checkForUserOccurrencesAndDestroy(client.id, data.lobbyCode);
 
-    lobbyModel.users.push(new UserModel(client.id, data.username));
+    lobbyModel.users.push(new UserModel(client.id, data.username, 0));
 
     this.replaceLobby(data.lobbyCode, lobbyModel);
     this.joinLobbySocketRoom(lobbyModel.idCode, client);
