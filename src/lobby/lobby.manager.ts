@@ -1,9 +1,12 @@
 import { LobbyModel } from './models/lobby.model';
 import { createRandomId } from '../utils/utils';
-import { UserModel } from '../sockets/models/user.model';
+import { UserModel } from './models/user.model';
 import { CreateLobbyDto } from '../sockets/dto/createLobby.dto';
 import { Server, Socket } from 'socket.io';
 import { JoinLobbyDto } from '../sockets/dto/joinLobby.dto';
+import { GameModel } from './models/game.model';
+import { LobbyCodeDto } from '../sockets/dto/lobbyCode.dto';
+import { CheckLobbyDto } from '../sockets/dto/checkLobby.dto';
 
 export class LobbyManager {
   private lobbies: Map<string, LobbyModel> = new Map();
@@ -14,6 +17,17 @@ export class LobbyManager {
     this.server = server;
   }
 
+  checkLobby(data: LobbyCodeDto): CheckLobbyDto {
+    const lobbyModel: LobbyModel = this.getLobby(data.lobbyCode);
+
+    const checkLobbyDto: CheckLobbyDto = new CheckLobbyDto(false);
+
+    if (!lobbyModel) return checkLobbyDto;
+
+    checkLobbyDto.exists = true;
+    return checkLobbyDto;
+  }
+
   createLobby(data: CreateLobbyDto, client: Socket): LobbyModel {
     const generatedId = createRandomId(10);
 
@@ -21,10 +35,10 @@ export class LobbyManager {
 
     const lobbyModel: LobbyModel = new LobbyModel(
       generatedId,
-      new UserModel(client.id, data.username),
+      new UserModel(client.id, data.username, 0),
       [],
       Date.now(),
-      false,
+      new GameModel(0, 0, 100, false, 'none'),
     );
 
     this.addLobby(lobbyModel);
@@ -37,10 +51,41 @@ export class LobbyManager {
     const lobbyModel: LobbyModel = this.getLobby(data.lobbyCode);
     this.checkForUserOccurrencesAndDestroy(client.id, data.lobbyCode);
 
-    lobbyModel.users.push(new UserModel(client.id, data.username));
+    lobbyModel.users.push(new UserModel(client.id, data.username, 0));
 
     this.replaceLobby(data.lobbyCode, lobbyModel);
     this.joinLobbySocketRoom(lobbyModel.idCode, client);
+
+    return lobbyModel;
+  }
+
+  clientDisconnect(client: Socket): void {
+    const lobbiesOfUser: LobbyModel[] = this.getLobbiesOfUser(client.id);
+
+    if (lobbiesOfUser.length == 0) {
+      return;
+    }
+
+    lobbiesOfUser.forEach((value) => {
+      if (value.owner.id == client.id) {
+        this.removeLobby(value.idCode);
+
+        this.server.to(value.idCode).emit('destroyLobby');
+      } else {
+        const index = value.users.findIndex((value1) => value1.id == client.id);
+
+        value.users.splice(index, 1);
+
+        this.replaceLobby(value.idCode, value);
+      }
+    });
+  }
+
+  startGame(data: LobbyCodeDto): LobbyModel {
+    const lobbyModel: LobbyModel = this.getLobby(data.lobbyCode);
+
+    lobbyModel.game.startTime = Date.now();
+    lobbyModel.game.started = true;
 
     return lobbyModel;
   }

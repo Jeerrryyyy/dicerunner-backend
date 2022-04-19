@@ -1,18 +1,19 @@
-import { UserModel } from '../../sockets/models/user.model';
+import { UserModel } from './user.model';
+import { GameModel } from './game.model';
 
 export class LobbyModel {
   private _idCode: string;
   private _owner: UserModel;
   private _users: UserModel[];
   private _creationMillis: number;
-  private _gameRunning: boolean;
+  private _game: GameModel;
 
-  constructor(idCode: string, owner: UserModel, users: UserModel[], creationMillis: number, gameRunning: boolean) {
+  constructor(idCode: string, owner: UserModel, users: UserModel[], creationMillis: number, game: GameModel) {
     this._idCode = idCode;
     this._owner = owner;
     this._users = users;
     this._creationMillis = creationMillis;
-    this._gameRunning = gameRunning;
+    this._game = game;
   }
 
   get idCode(): string {
@@ -47,11 +48,11 @@ export class LobbyModel {
     this._creationMillis = value;
   }
 
-  get gameRunning(): boolean {
-    return this._gameRunning;
+  get game(): GameModel {
+    return this._game;
   }
 
-  set gameRunning(value: boolean) {
-    this._gameRunning = value;
+  set game(value: GameModel) {
+    this._game = value;
   }
 }
