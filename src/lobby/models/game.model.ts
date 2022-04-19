@@ -2,15 +2,15 @@ export class GameModel {
   private _startTime: number;
   private _endTime: number;
   private _maxScore: number;
-  private _gameStarted: boolean;
-  private _gameWinner: string;
+  private _started: boolean;
+  private _winner: string;
 
-  constructor(startTime: number, endTime: number, maxScore: number, gameStarted: boolean, gameWinner: string) {
+  constructor(startTime: number, endTime: number, maxScore: number, started: boolean, winner: string) {
     this._startTime = startTime;
     this._endTime = endTime;
     this._maxScore = maxScore;
-    this._gameStarted = gameStarted;
-    this._gameWinner = gameWinner;
+    this._started = started;
+    this._winner = winner;
   }
 
   get startTime(): number {
@@ -37,19 +37,19 @@ export class GameModel {
     this._maxScore = value;
   }
 
-  get gameStarted(): boolean {
-    return this._gameStarted;
+  get started(): boolean {
+    return this._started;
   }
 
-  set gameStarted(value: boolean) {
-    this._gameStarted = value;
+  set started(value: boolean) {
+    this._started = value;
   }
 
-  get gameWinner(): string {
-    return this._gameWinner;
+  get winner(): string {
+    return this._winner;
   }
 
-  set gameWinner(value: string) {
-    this._gameWinner = value;
+  set winner(value: string) {
+    this._winner = value;
   }
 }

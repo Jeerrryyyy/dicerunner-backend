@@ -11,6 +11,8 @@ import { Server, Socket } from 'socket.io';
 import { LobbyModel } from '../lobby/models/lobby.model';
 import { CreateLobbyDto } from './dto/createLobby.dto';
 import { JoinLobbyDto } from './dto/joinLobby.dto';
+import { LobbyCodeDto } from './dto/lobbyCode.dto';
+import { CheckLobbyDto } from './dto/checkLobby.dto';
 
 @WebSocketGateway()
 export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
@@ -21,7 +23,12 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket): void {
-    console.log({ client });
+    this.lobbyManager.clientDisconnect(client);
+  }
+
+  @SubscribeMessage('checkLobby')
+  handleCheckLobby(@MessageBody() data: LobbyCodeDto): CheckLobbyDto {
+    return this.lobbyManager.checkLobby(data);
   }
 
   @SubscribeMessage('createLobby')
@@ -32,5 +39,10 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('joinLobby')
   handleJoinLobby(@MessageBody() data: JoinLobbyDto, @ConnectedSocket() client: Socket): LobbyModel {
     return this.lobbyManager.joinLobby(data, client);
+  }
+
+  @SubscribeMessage('startGame')
+  handleStartGame(@MessageBody() data: LobbyCodeDto): LobbyModel {
+    return this.lobbyManager.startGame(data);
   }
 }

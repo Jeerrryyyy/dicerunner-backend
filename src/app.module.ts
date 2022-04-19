@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { GameController } from './api/game/game.controller';
-import { GameService } from './api/game/game.service';
 import { LobbyGateway } from './sockets/lobby.gateway';
+import { HealthController } from './api/health/health.controller';
+import { StatisticsService } from './api/statistics/statistics.service';
+import { StatisticsController } from './api/statistics/statistics.controller';
 
 @Module({
   imports: [],
-  controllers: [GameController],
-  providers: [GameService, LobbyGateway],
+  controllers: [HealthController, StatisticsController],
+  providers: [StatisticsService, LobbyGateway],
 })
 export class AppModule {}
