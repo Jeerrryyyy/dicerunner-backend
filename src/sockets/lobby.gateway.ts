@@ -2,9 +2,9 @@ import {
   ConnectedSocket,
   MessageBody,
   OnGatewayDisconnect,
-  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { LobbyManager } from '../lobby/lobby.manager';
 import { Server, Socket } from 'socket.io';
@@ -17,15 +17,14 @@ import { RoleDiceDto } from './dto/roleDice.dto';
 import { EndGameDto } from './dto/endGame.dto';
 
 @WebSocketGateway()
-export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
-  private lobbyManager: LobbyManager;
+export class LobbyGateway implements OnGatewayDisconnect {
+  @WebSocketServer()
+  private server: Server;
 
-  afterInit(server: Server): void {
-    this.lobbyManager = new LobbyManager(server);
-  }
+  constructor(private lobbyManager: LobbyManager) {}
 
   handleDisconnect(client: Socket): void {
-    this.lobbyManager.clientDisconnect(client);
+    this.lobbyManager.clientDisconnect(client, this.server);
   }
 
   @SubscribeMessage('checkLobby')
@@ -35,27 +34,27 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
 
   @SubscribeMessage('createLobby')
   handleCreateLobby(@MessageBody() data: CreateLobbyDto, @ConnectedSocket() client: Socket): LobbyModel {
-    return this.lobbyManager.createLobby(data, client);
+    return this.lobbyManager.createLobby(data, client, this.server);
   }
 
   @SubscribeMessage('joinLobby')
   handleJoinLobby(@MessageBody() data: JoinLobbyDto, @ConnectedSocket() client: Socket): LobbyModel {
-    return this.lobbyManager.joinLobby(data, client);
+    return this.lobbyManager.joinLobby(data, client, this.server);
   }
 
   @SubscribeMessage('startGame')
   handleStartGame(@MessageBody() data: LobbyCodeDto): void {
-    this.lobbyManager.startGame(data);
+    this.lobbyManager.startGame(data, this.server);
   }
 
   @SubscribeMessage('roleDice')
   handleRoleDice(@MessageBody() data: RoleDiceDto, @ConnectedSocket() client: Socket): void {
-    this.lobbyManager.roleDice(data, client);
+    this.lobbyManager.roleDice(data, client, this.server);
   }
 
   @SubscribeMessage('endGame')
   handleEndGame(@MessageBody() data: EndGameDto): void {
-    this.lobbyManager.endGame(data);
+    this.lobbyManager.endGame(data, this.server);
   }
 
   @SubscribeMessage('allLobbies')
