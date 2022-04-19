@@ -8,6 +8,7 @@ import { GameModel } from './models/game.model';
 import { LobbyCodeDto } from '../sockets/dto/lobbyCode.dto';
 import { CheckLobbyDto } from '../sockets/dto/checkLobby.dto';
 import { RoleDiceDto } from '../sockets/dto/roleDice.dto';
+import { EndGameDto } from '../sockets/dto/endGame.dto';
 
 export class LobbyManager {
   private lobbies: Map<string, LobbyModel> = new Map();
@@ -86,6 +87,20 @@ export class LobbyManager {
     lobbyModel.users.push(userModel);
 
     this.replaceLobby(lobbyModel.idCode, lobbyModel);
+  }
+
+  endGame(data: EndGameDto): void {
+    const lobbyModel = this.getLobby(data.lobbyCode);
+
+    lobbyModel.game.winner = data.winner;
+    lobbyModel.game.endTime = Date.now();
+
+    this.removeLobby(lobbyModel.idCode);
+    this.server.to(lobbyModel.idCode).emit('destroyLobby');
+  }
+
+  allLobbies(): LobbyModel[] {
+    return Array.from(this.lobbies.values());
   }
 
   private joinLobbySocketRoom(id: string, client: Socket) {

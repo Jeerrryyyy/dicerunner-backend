@@ -14,6 +14,7 @@ import { JoinLobbyDto } from './dto/joinLobby.dto';
 import { LobbyCodeDto } from './dto/lobbyCode.dto';
 import { CheckLobbyDto } from './dto/checkLobby.dto';
 import { RoleDiceDto } from './dto/roleDice.dto';
+import { EndGameDto } from './dto/endGame.dto';
 
 @WebSocketGateway()
 export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
@@ -50,5 +51,15 @@ export class LobbyGateway implements OnGatewayInit, OnGatewayDisconnect {
   @SubscribeMessage('roleDice')
   handleRoleDice(@MessageBody() data: RoleDiceDto, @ConnectedSocket() client: Socket): void {
     this.lobbyManager.roleDice(data, client);
+  }
+
+  @SubscribeMessage('endGame')
+  handleEndGame(@MessageBody() data: EndGameDto): void {
+    this.lobbyManager.endGame(data);
+  }
+
+  @SubscribeMessage('allLobbies')
+  handleAllLobbies(): LobbyModel[] {
+    return this.lobbyManager.allLobbies();
   }
 }
