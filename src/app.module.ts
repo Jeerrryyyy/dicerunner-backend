@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Game, GameSchema } from './database/game.schema';
 import { LobbyManager } from './lobby/lobby.manager';
+import { Dice, DiceSchema } from './database/dice.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,10 @@ import { LobbyManager } from './lobby/lobby.manager';
       {
         name: Game.name,
         schema: GameSchema,
+      },
+      {
+        name: Dice.name,
+        schema: DiceSchema,
       },
     ]),
   ],

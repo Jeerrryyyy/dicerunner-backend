@@ -13,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Game, GameDocument } from '../database/game.schema';
 import { Model } from 'mongoose';
+import { Dice, DiceDocument } from '../database/dice.schema';
 
 @Injectable()
 export class LobbyManager {
@@ -22,6 +23,8 @@ export class LobbyManager {
   constructor(
     @InjectModel(Game.name)
     private gameModel: Model<GameDocument>,
+    @InjectModel(Dice.name)
+    private diceModel: Model<DiceDocument>,
   ) {}
 
   checkLobby(data: LobbyCodeDto): CheckLobbyDto {
@@ -84,14 +87,27 @@ export class LobbyManager {
   roleDice(data: RoleDiceDto, client: Socket, server: Server): void {
     const lobbyModel = this.getLobby(data.lobbyCode);
 
-    const userModel = lobbyModel.users.find((value) => value.id == client.id);
-    const index = lobbyModel.users.findIndex((value) => value.id == client.id);
+    let userModel;
+    let index;
 
-    lobbyModel.users.splice(index, 1);
+    if (client.id == lobbyModel.owner.id) {
+      userModel = lobbyModel.owner;
+    } else {
+      userModel = lobbyModel.users.find((value) => value.id == client.id);
+      index = lobbyModel.users.findIndex((value) => value.id == client.id);
+      lobbyModel.users.splice(index, 1);
+    }
+
     userModel.diceScore = userModel.diceScore + data.diceCount;
-    lobbyModel.users.push(userModel);
+
+    if (client.id == lobbyModel.owner.id) {
+      lobbyModel.owner = userModel;
+    } else {
+      lobbyModel.users.push(userModel);
+    }
 
     this.replaceLobby(lobbyModel.idCode, lobbyModel, server);
+    this.saveDice(lobbyModel.idCode, userModel.name, data.diceCount);
   }
 
   endGame(data: EndGameDto, server: Server): void {
@@ -179,7 +195,7 @@ export class LobbyManager {
     return this.lobbies.get(idCode);
   }
 
-  private saveGame(lobbyModel: LobbyModel) {
+  private saveGame(lobbyModel: LobbyModel): void {
     const values = {
       lobbyCode: lobbyModel.idCode,
       ownerName: lobbyModel.owner.name,
@@ -199,6 +215,27 @@ export class LobbyManager {
       },
       (reason) => {
         this.logger.error("Something went wrong while saving '" + lobbyModel.idCode + "'");
+        this.logger.error(reason);
+      },
+    );
+  }
+
+  private saveDice(lobbyCode: string, playerName: string, rolledNumber: number): void {
+    const values = {
+      lobbyCode: lobbyCode,
+      playerName: playerName,
+      dateMillis: Date.now(),
+      rolledNumber: rolledNumber,
+    };
+
+    const createdDiceModel = new this.diceModel(values);
+
+    createdDiceModel.save().then(
+      (value) => {
+        this.logger.log("Saved new record of dice with id '" + value.lobbyCode + "'");
+      },
+      (reason) => {
+        this.logger.error("Something went wrong while saving dice: '" + lobbyCode + "'");
         this.logger.error(reason);
       },
     );
