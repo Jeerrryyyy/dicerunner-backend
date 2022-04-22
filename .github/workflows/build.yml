@@ -31,4 +31,4 @@ jobs:
         run: docker push $IMAGE_NAME
 
       - name: Deploy Docker image
-        run: gcloud run deploy ${{ secrets.GCP_APP_NAME }} --image $IMAGE_NAME --update-secrets=CONNECTION_STRING=CONNECTION_STRING:latest --region europe-west1 --platform managed --max-instances 1 --allow-unauthenticated
+        run: gcloud run deploy ${{ secrets.GCP_APP_NAME }} --image $IMAGE_NAME --update-secrets=MONGO_STRING=CONNECTION_STRING:latest --region europe-west1 --platform managed --max-instances 1 --allow-unauthenticated

@@ -12,7 +12,7 @@ import { Dice, DiceSchema } from './database/dice.schema';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.CONNECTION_STRING),
+    MongooseModule.forRoot(process.env.MONGO_STRING),
     MongooseModule.forFeature([
       {
         name: Game.name,
