@@ -33,8 +33,8 @@ jobs:
       - name: Deploy Docker image
         run: |-
           gcloud run deploy ${{ secrets.GCP_APP_NAME }} \
-            --set-env-vars CONNECTION_STRING=${{ secrets.GCP_MONGO_URL }}
             --image $IMAGE_NAME \
+            --set-env-vars CONNECTION_STRING=${{ secrets.GCP_MONGO_URL }}
             --region europe-west1 \
             --platform managed \
             --max-instances 1 \
